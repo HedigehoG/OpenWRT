@@ -3,6 +3,19 @@ opkg remove dnsmasq && opkg install dnsmasq-full --cache /tmp/
 mv /etc/config/dhcp-opkg /etc/config/dhcp
 opkg install jq shadowsocks-libev-ss-redir shadowsocks-libev-ss-rules luci-app-shadowsocks-libev stubby resolveip
 
+# Enable DNS encryption
+service dnsmasq stop
+uci set dhcp.@dnsmasq[0].noresolv="1"
+uci set dhcp.@dnsmasq[0].localuse="1"
+uci -q delete dhcp.@dnsmasq[0].server
+uci -q get stubby.global.listen_address \
+| sed -e "s/\s/\n/g;s/@/#/g" \
+| while read -r STUBBY_SERV
+do uci add_list dhcp.@dnsmasq[0].server="${STUBBY_SERV}"
+done
+uci commit dhcp
+service dnsmasq start		
+
 ##########  Create Bash app  ##########
 mkdir /etc/antiban/
 touch /etc/antiban/sites
