@@ -1,5 +1,6 @@
 # OpenWRT
-Confis for router
+Config's for router with openwrt 22+
+
 sh <(wget -O - https://github.com/HedigehoG/OpenWRT/raw/main/inst.sh)
 
 ## ########  Filtering traffic with IP sets by DNS  ##########
