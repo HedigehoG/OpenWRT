@@ -17,6 +17,9 @@ uci commit dhcp
 service dnsmasq start		
 
 ##########  Create Bash app  ##########
+# antiban R - Reload domain from list, Q - refresh 
+# antiban ex.net - add new domen
+
 mkdir /etc/antiban/
 touch /etc/antiban/sites
 uci set dhcp.dom="ipset"
@@ -29,7 +32,6 @@ uci set dhcp.dom="ipset"
 function add_d {
 	uci add_list dhcp.dom.domain="$1"
 	uci commit dhcp
-	service dnsmasq restart
 }
 
 # you can add here any your lists of domains
@@ -39,11 +41,9 @@ function load_list {
 		echo nftset=/$d/4#inet#fw4#ss_rules_dst_forward
 	done > /tmp/dnsmasq.d/domains.lst
 	
-#	echo $sitef |while read d; do
-#	echo nftset=/$d/4#inet#fw4#ss_rules_dst_forward
-#	done >> /tmp/dnsmasq.d/domains.lst
-
-	service dnsmasq restart
+	cat $sitef |while read d; do
+	echo nftset=/$d/4#inet#fw4#ss_rules_dst_forward
+	done >> /tmp/dnsmasq.d/domains.lst
 }
 
 case $1 in
@@ -65,13 +65,14 @@ R)
 		resolveip -4 $1
 			if [ $? -eq 0 ]; then
 				add_d $1
-				echo $1 >> $sitef
+				grep -x $1 $sitef > /dev/null || echo $1 >> $sitef
 			else echo "bad address"
 			fi
 		shift
 	done  
 ;;
 esac
+service dnsmasq restart
 EOF
 
 chmod +x /etc/antiban/aniblock.sh
