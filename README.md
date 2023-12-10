@@ -1,5 +1,6 @@
 # OpenWRT
 Confis for router
+sh <(wget -O - https://github.com/HedigehoG/OpenWRT/raw/main/inst.sh)
 
 ## ########  Filtering traffic with IP sets by DNS  ##########
 https://openwrt.org/docs/guide-user/firewall/fw3_configurations/dns_ipset
