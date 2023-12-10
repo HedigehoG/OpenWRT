@@ -1,7 +1,7 @@
 # OpenWRT
 Confis for router
 
-##########  Filtering traffic with IP sets by DNS  ##########
+## ########  Filtering traffic with IP sets by DNS  ##########
 https://openwrt.org/docs/guide-user/firewall/fw3_configurations/dns_ipset
 
 uci -q delete dhcp.filter
@@ -10,12 +10,12 @@ uci add_list dhcp.filter.name="ss_rules_dst_forward"
 uci add_list dhcp.filter.domain="2ip.ru"
 uci commit dhcp
 
-# Add domains
+### Add domains
 uci add_list dhcp.filter.domain="example.com"
- # Remove domains
+### Remove domains
 uci del_list dhcp.filter.domain="example.com"
 
-##########  Load domen list  ##########
+### #######  Load domen list  ##########
 nslookup www.google.com $@>/dev/null  || return 0
 curl https://reestr.rublacklist.net/api/v3/dpi/ |jq '.[].domains[]' |while read d; do
 	d=$(echo $d |tr -d \")
@@ -23,13 +23,13 @@ curl https://reestr.rublacklist.net/api/v3/dpi/ |jq '.[].domains[]' |while read 
 done > /tmp/dnsmasq.d/domains.lst
 service dnsmasq restart
 
-##########  install stubby  ##########################
+### #######  install stubby  ##########################
 https://openwrt.org/docs/guide-user/services/dns/dot_dnsmasq_stubby
 	
 opkg update
 opkg install stubby
  
-# Enable DNS encryption
+### Enable DNS encryption
 service dnsmasq stop
 uci set dhcp.@dnsmasq[0].noresolv="1"
 uci set dhcp.@dnsmasq[0].localuse="1"
@@ -40,4 +40,4 @@ uci -q get stubby.global.listen_address \
 do uci add_list dhcp.@dnsmasq[0].server="${STUBBY_SERV}"
 done
 uci commit dhcp
-service dnsmasq start		
+service dnsmasq start	
