@@ -1,0 +1,2 @@
+# OpenWRT
+Confis for router
