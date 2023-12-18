@@ -50,6 +50,9 @@ case $1 in
 Q)
 	load_list
 ;;
+D)
+	grep -x $2 $sitef | sed -i "/^$2/d" $sitef && sed -i '/'"'"$2"'"'/d' /etc/config/dhcp	
+;;
 R)	
 	while ! $(nslookup www.google.com > /dev/null) ;do
 		echo "not internet"
