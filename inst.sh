@@ -60,7 +60,8 @@ R)
 	load_list
 ;;
 '')
-	echo "insert domen name for add to list antiban"
+	echo "insert domen name for add to list antiban, R -reload, Q -load from list, D -remove"
+ 	exit 0
 ;;
 *)
 	while [ -n "$1" ]
