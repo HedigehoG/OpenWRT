@@ -66,12 +66,14 @@ R)
 *)
 	while [ -n "$1" ]
 	do
-		resolveip -4 $1
-			if [ $? -eq 0 ]; then
-				add_d $1
-				grep -x $1 $sitef > /dev/null || echo $1 >> $sitef
+		if ! grep -x $1 $sitef; then
+			if resolveip -4 $1; then
+				echo $1 >> $sitef
+				add_d $1				
 			else echo "bad address"
 			fi
+		else echo "Exist \"$1\" in sites"
+		fi
 		shift
 	done  
 ;;
