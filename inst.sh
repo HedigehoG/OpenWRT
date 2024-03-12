@@ -36,7 +36,7 @@ sitef="/etc/antiban/sites"
 uci set dhcp.dom="ipset"
 
 function add_d {
-	uci add_list dhcp.dom.domain="$1"
+	uci add_list dhcp.ss_rules.domain="$1"
 	uci commit dhcp
 }
 
