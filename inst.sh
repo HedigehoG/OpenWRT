@@ -1,9 +1,10 @@
 opkg update && cd /tmp/ && opkg download dnsmasq-full
 opkg remove dnsmasq && opkg install dnsmasq-full --cache /tmp/
 mv /etc/config/dhcp-opkg /etc/config/dhcp
-opkg install jq shadowsocks-libev-ss-redir shadowsocks-libev-ss-rules luci-app-shadowsocks-libev stubby resolveip
+#install shadowsocks and some apps for automated, stubby - DNS DoH, jq - for json, curl - by itself
+opkg install shadowsocks-libev-ss-redir shadowsocks-libev-ss-rules luci-app-shadowsocks-libev stubby jq curl
 
-# Enable DNS encryption
+# Enable DNS DoH encryption
 service dnsmasq stop
 uci set dhcp.@dnsmasq[0].noresolv="1"
 uci set dhcp.@dnsmasq[0].localuse="1"
@@ -16,14 +17,19 @@ done
 uci commit dhcp
 service dnsmasq start		
 
+# Setup ipsets
+uci set dhcp.ss_rules="ipset"
+uci add_list dhcp.ss_rules.name="ss_rules_dst_forward"
+uci add_list dhcp.ss_rules.name="ss_rules6_dst_forward"
+uci add_list dhcp.ss_rules.domain="linkedin.com"
+uci commit dhcp
+
 ##########  Create Bash app  ##########
-# antiban R - Reload domain from list, Q - refresh 
-# antiban ex.net - add new domen
+# antiban R - Reload domain from list, Q - refresh
+# antiban ex.net - add new domen, antiban D ex.net -del from list
 
 mkdir /etc/antiban/
 touch /etc/antiban/sites
-uci set dhcp.dom="ipset"
-uci add_list dhcp.dom.name="ss_rules_dst_forward"
 
 cat << "EOF" > /etc/antiban/aniblock.sh
 sitef="/etc/antiban/sites"
@@ -60,7 +66,7 @@ R)
 	load_list
 ;;
 '')
-	echo "insert domen name for add to list antiban, R -reload, Q -load from list, D -remove"
+	echo "insert domen name for add to list antiban, R -reload, Q -load from list, D ex.net -remove"
  	exit 0
 ;;
 *)
