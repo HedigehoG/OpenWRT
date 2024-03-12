@@ -17,7 +17,7 @@ done
 uci commit dhcp
 service dnsmasq start		
 
-# Setup ipsets
+# Setup ipsets https://openwrt.org/docs/guide-user/base-system/dhcp#ip_sets
 uci set dhcp.ss_rules="ipset"
 uci add_list dhcp.ss_rules.name="ss_rules_dst_forward"
 uci add_list dhcp.ss_rules.name="ss_rules6_dst_forward"
