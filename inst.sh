@@ -33,6 +33,8 @@ touch /etc/antiban/sites
 
 cat << "EOF" > /etc/antiban/aniblock.sh
 sitef="/etc/antiban/sites"
+dnslistrule="/tmp/dnsmasq.d/domains.lst"
+
 uci set dhcp.dom="ipset"
 
 function add_d {
@@ -42,22 +44,33 @@ function add_d {
 
 # you can add here any your lists of domains
 function load_list {
-	curl https://reestr.rublacklist.net/api/v3/dpi/ |jq '.[].domains[]' |while read d; do
-		d=$(echo $d |tr -d \")
-		echo nftset=/$d/4#inet#fw4#ss_rules_dst_forward
-	done > /tmp/dnsmasq.d/domains.lst
-	
+	if [ -z $1 ]
+ 	then 
+		curl https://reestr.rublacklist.net/api/v3/dpi/ |jq '.[].domains[]' |while read d; do
+			d=$(echo $d |tr -d \")
+			echo nftset=/$d/4#inet#fw4#ss_rules_dst_forward
+		done > dnslistrule
+	fi
+ 
 	cat $sitef |while read d; do
 	echo nftset=/$d/4#inet#fw4#ss_rules_dst_forward
-	done >> /tmp/dnsmasq.d/domains.lst
+	done >> $dnslistrule
 }
 
 case $1 in
+C)
+	cat /dev/null > $dnslistrule
+ 	nft flush set inet fw4 ss_rules_dst_forward
+  	echo 'Cleaned'
+;;
+
 Q)
-	load_list
+	load_list only
 ;;
 D)
-	grep -x $2 $sitef | sed -i "/^$2/d" $sitef && sed -i '/'"'"$2"'"'/d' /etc/config/dhcp	
+	grep -x $2 $sitef | sed -i "/^$2/d" $sitef && sed -i '/'"'"$2"'"'/d' /etc/config/dhcp && sed -i '/'$2'/d' $dnslistrule
+ 	nft flush set inet fw4 ss_rules_dst_forward
+  	echo "$2    Removed"
 ;;
 R)	
 	while ! $(nslookup www.google.com > /dev/null) ;do
@@ -66,7 +79,7 @@ R)
 	load_list
 ;;
 '')
-	echo "insert domen name for add to list antiban, R -reload, Q -load from list, D ex.net -remove"
+	echo "insert domen name for add to list antiban, R -reload, Q -load from custom list only, D ex.net -remove /n C -clear list rules"
  	exit 0
 ;;
 *)
